@@ -26,92 +26,6 @@ A Laravel membership management and transaction processing system. It provides a
 - A browser
 - Internet access to load Pico.css from jsDelivr
 
-## Set up with the SQL import file
-
-These steps use the included SQL file to create the database and starter records.
-
-1. Extract the project ZIP and open a terminal in the extracted project folder.
-2. Start your MySQL service. With XAMPP, start **MySQL** in the XAMPP Control Panel.
-3. Open phpMyAdmin, choose **Import**, select `database/membership_tps.sql`, and import it. The file creates the `membership_tps` database, tables, starter categories and levels, and a demo admin account.
-4. Install PHP dependencies and create your environment file:
-
-   ```bash
-   composer install
-   copy .env.example .env
-   ```
-
-   On macOS or Linux, use `cp .env.example .env` instead of `copy`.
-
-5. Open `.env` and check the application and database values. The defaults are:
-
-   ```env
-   APP_NAME="Puihaha E-learning"
-   APP_URL=http://127.0.0.1:8000
-   DB_CONNECTION=mysql
-   DB_HOST=127.0.0.1
-   DB_PORT=3306
-   DB_DATABASE=membership_tps
-   DB_USERNAME=root
-   DB_PASSWORD=
-   SESSION_DRIVER=file
-   ```
-
-   Change `DB_USERNAME` or `DB_PASSWORD` if your MySQL setup uses different credentials. Keep `SESSION_DRIVER=file` unless you have also created a `sessions` table.
-
-6. Generate the Laravel application key and clear cached configuration:
-
-   ```bash
-   php artisan key:generate
-   php artisan config:clear
-   ```
-
-7. Start the local server:
-
-   ```bash
-   php artisan serve
-   ```
-
-8. Visit [http://127.0.0.1:8000](http://127.0.0.1:8000).
-
-The SQL file already creates and records the included migrations, so you do not need to run migrations after importing it.
-
-## Alternative: create tables with migrations
-
-Use this method if you do not want to import the SQL file. Create an empty MySQL database named `membership_tps`, configure `.env`, install dependencies, and run:
-
-```bash
-php artisan key:generate
-php artisan migrate --seed
-php artisan serve
-```
-
-Do not use the SQL import and the migration setup as separate fresh-install methods on the same empty database; choose one method.
-
-## Sign-in and registration
-
-The SQL import and database seeder provide this local demo account:
-
-- **Email:** `admin@example.com`
-- **Password:** `password`
-
-The login page links to the registration page. New accounts are signed in after registration. **At present, every registered account has administrator access**, as requested for this version. Keep public registration limited to a trusted local environment until role-based access is added.
-
-If you changed the password directly in MySQL and login fails, set it through Laravel so it is stored as a bcrypt hash:
-
-```bash
-php artisan tinker
-```
-
-At the Tinker prompt, run:
-
-```php
-$user = \App\Models\User::where('email', 'admin@example.com')->firstOrFail();
-$user->password = \Illuminate\Support\Facades\Hash::make('YourNewPassword123!');
-$user->save();
-```
-
-Replace the sample password with one you choose, then enter `exit` and sign in with it. Do not store a plain-text password in the database.
-
 ## Main workflows
 
 ### Register a member
@@ -137,17 +51,7 @@ Use **Categories** and **Levels** to add or edit their details. Deactivate categ
 
 ### Expire memberships
 
-The `memberships:expire` command marks approved transactions with past expiry dates as expired. For local development, run the Laravel scheduler in a second terminal:
-
-```bash
-php artisan schedule:work
-```
-
-You can also run the expiry command manually:
-
-```bash
-php artisan memberships:expire
-```
+The `memberships:expire` command marks approved transactions with past expiry dates as expired.
 
 ## Project structure
 
@@ -163,35 +67,6 @@ php artisan memberships:expire
 | `routes/web.php` | Web routes and authentication access rules |
 | `public/css/app.css` | Dark theme and page layout styles |
 | `.env.example` | Sample local environment configuration |
-
-## Troubleshooting
-
-### `Table 'membership_tps.sessions' doesn't exist`
-
-Open `.env`, set `SESSION_DRIVER=file`, save, and run:
-
-```bash
-php artisan config:clear
-```
-
-If you prefer database sessions, create the Laravel sessions migration and run it:
-
-```bash
-php artisan make:session-table
-php artisan migrate
-```
-
-### `This password does not use the Bcrypt algorithm`
-
-The database password value was likely entered as plain text or another hash type. Use the Tinker steps above to save a bcrypt hash.
-
-### MySQL connection error
-
-Make sure MySQL is running and that the `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, and `DB_PASSWORD` values in `.env` match your local setup. Then run `php artisan config:clear`.
-
-### Changes are not showing
-
-After changing `.env`, run `php artisan config:clear`. If a page's CSS still appears unchanged, hard-refresh the browser.
 
 ## Current limitations
 
