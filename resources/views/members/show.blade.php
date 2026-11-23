@@ -1,0 +1,12 @@
+@extends('layouts.app')
+@section('title', $member->full_name)
+@section('content')
+<div class="page-heading"><div><p class="eyebrow">MEMBER PROFILE</p><h1>{{ $member->full_name }}</h1><p class="muted">{{ $member->membership_number }}</p></div><div class="heading-actions"><button type="button" class="outline secondary" onclick="window.print()">Print record</button><a href="{{ route('members.edit', $member) }}" role="button" class="outline">Edit member</a><form method="POST" action="{{ route('members.destroy', $member) }}" onsubmit="return confirm('Deactivate and archive this member?')">@csrf @method('DELETE')<button class="secondary outline" type="submit">Deactivate</button></form></div></div>
+<section class="profile-grid"><article><span class="stat-label">Contact</span><p><strong>{{ $member->email }}</strong><br>{{ $member->phone ?: 'No phone number' }}</p></article><article><span class="stat-label">Membership</span><p><strong>{{ $member->category->name }} · {{ $member->level->name }}</strong><br>Joined {{ $member->joined_on?->format('M d, Y') ?? '—' }}</p></article><article><span class="stat-label">Current status</span><p><span class="status {{ $member->is_active ? 'status-approved' : 'status-cancelled' }}">{{ $member->is_active ? 'Active' : 'Inactive' }}</span></p></article></section>
+<section class="section-block"><div class="section-heading"><div><h2>Transaction history</h2><p class="muted">Applications, renewals, and related payments.</p></div></div>
+<div class="table-wrap"><table><thead><tr><th>Reference</th><th>Type</th><th>Amount</th><th>Status</th><th>Payment details</th><th>Created</th></tr></thead><tbody>
+@forelse($member->transactions->sortByDesc('created_at') as $transaction)
+<tr><td>{{ $transaction->reference_number }}</td><td>{{ ucfirst($transaction->type) }}</td><td>₱{{ number_format((float)$transaction->amount_due, 2) }}</td><td><span class="status status-{{ $transaction->status }}">{{ ucfirst($transaction->status) }}</span></td><td>@forelse($transaction->payments as $payment)<small class="block">{{ $payment->payment_reference }} · ₱{{ number_format((float)$payment->amount, 2) }} · {{ $payment->paid_at->format('M d, Y') }}</small>@empty<span class="muted">No payment</span>@endforelse</td><td>{{ $transaction->created_at->format('M d, Y') }}</td></tr>
+@empty<tr><td colspan="6" class="empty-state">No transaction history.</td></tr>@endforelse
+</tbody></table></div></section>
+@endsection

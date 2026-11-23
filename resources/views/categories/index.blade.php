@@ -1,0 +1,10 @@
+@extends('layouts.app')
+@section('title', 'Categories')
+@section('content')
+<div class="page-heading"><div><p class="eyebrow">CONFIGURATION</p><h1>Membership categories</h1><p class="muted">Define the member groups used during registration.</p></div></div>
+<section class="split-layout"><article class="form-card"><h2>Add a category</h2><form method="POST" action="{{ route('categories.store') }}">@csrf<label>Name<input name="name" maxlength="100" placeholder="e.g. Student" required></label><label>Description<textarea name="description" rows="3" maxlength="1000" placeholder="Optional details"></textarea></label><button type="submit">Add category</button></form></article>
+<div class="table-wrap"><table><thead><tr><th>Category</th><th>Members</th><th>Status</th><th>Action</th></tr></thead><tbody>
+@forelse($categories as $category)<tr><td><strong>{{ $category->name }}</strong><small class="block muted">{{ $category->description }}</small></td><td>{{ $category->members_count }}</td><td><span class="status {{ $category->is_active ? 'status-approved' : 'status-cancelled' }}">{{ $category->is_active ? 'Active' : 'Inactive' }}</span></td><td><form method="POST" action="{{ route('categories.toggle', $category) }}">@csrf @method('PATCH')<button class="outline secondary small-button" type="submit">{{ $category->is_active ? 'Deactivate' : 'Activate' }}</button></form></td></tr>@empty<tr><td colspan="4" class="empty-state">No categories yet.</td></tr>@endforelse
+</tbody></table></div></section>
+<section class="section-block"><h2>Edit category details</h2><div class="edit-card-grid">@foreach($categories as $category)<article><form method="POST" action="{{ route('categories.update', $category) }}">@csrf @method('PUT')<label>{{ $category->name }}<input name="name" value="{{ $category->name }}" required></label><label>Description<textarea name="description" rows="2">{{ $category->description }}</textarea></label><button class="outline" type="submit">Save</button></form></article>@endforeach</div></section>
+@endsection

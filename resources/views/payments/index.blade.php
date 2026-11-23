@@ -1,0 +1,13 @@
+@extends('layouts.app')
+@section('title', 'Payments')
+@section('content')
+<div class="page-heading"><div><p class="eyebrow">PAYMENT RECORDS</p><h1>Payments</h1><p class="muted">Record an exact payment against a pending transaction.</p></div></div>
+<article class="form-card payment-form"><h2>Record payment</h2><form method="POST" action="{{ route('payments.store') }}">@csrf
+<label>Pending transaction<select name="membership_transaction_id" required><option value="">Choose a transaction</option>@foreach($payable as $transaction)<option value="{{ $transaction->id }}" @selected(old('membership_transaction_id') == $transaction->id)>{{ $transaction->reference_number }} · {{ $transaction->member->full_name }} · ₱{{ number_format((float)$transaction->amount_due, 2) }}</option>@endforeach</select></label>
+<div class="form-grid"><label>Amount (₱)<input type="number" name="amount" min="0.01" step="0.01" value="{{ old('amount') }}" required></label><label>Payment method<select name="method" required><option value="">Choose method</option><option value="cash">Cash</option><option value="bank_transfer">Bank transfer</option><option value="card">Card</option><option value="e_wallet">E-wallet</option></select></label><label>Payment date and time<input type="datetime-local" name="paid_at" value="{{ old('paid_at', now()->format('Y-m-d\TH:i')) }}" required></label><label>Notes <small class="muted">Optional</small><input name="notes" maxlength="1000" value="{{ old('notes') }}"></label></div>
+<button type="submit" @disabled($payable->isEmpty())>Record payment</button>@if($payable->isEmpty())<small class="block muted">There are no pending transactions to pay.</small>@endif
+</form></article>
+<section class="section-block"><div class="section-heading"><div><h2>Payment history</h2><p class="muted">All recorded payment details and references.</p></div></div><div class="table-wrap"><table><thead><tr><th>Payment reference</th><th>Member</th><th>Transaction</th><th>Amount</th><th>Method</th><th>Paid at</th></tr></thead><tbody>
+@forelse($payments as $payment)<tr><td><strong>{{ $payment->payment_reference }}</strong></td><td><a href="{{ route('members.show', $payment->transaction->member) }}">{{ $payment->transaction->member->full_name }}</a></td><td>{{ $payment->transaction->reference_number }}</td><td>₱{{ number_format((float)$payment->amount, 2) }}</td><td>{{ ucwords(str_replace('_', ' ', $payment->method)) }}</td><td>{{ $payment->paid_at->format('M d, Y · h:i A') }}</td></tr>@empty<tr><td colspan="6" class="empty-state">No payments recorded yet.</td></tr>@endforelse
+</tbody></table></div>{{ $payments->links() }}</section>
+@endsection
